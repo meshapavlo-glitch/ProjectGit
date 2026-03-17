@@ -3,29 +3,69 @@ package org.example;
 import java.util.Objects;
 
 /**
- * Клас, що представляє об'єкт одягу.
- * Містить валідацію параметрів та документацію JavaDoc.
+ * Клас, що описує предмет одягу.
+ * Містить інформацію про тип, розмір, ціну та матеріал.
  */
 public class Clothes {
     private String type;
     private String size;
     private double price;
-    private String material;
+    private Material material;
 
+    /** Статичне поле для підрахунку загальної кількості створених об'єктів */
+    private static int instanceCount = 0;
 
-    public Clothes(String type, String size, double price, String material) {
+    /**
+     * Конструктор з параметрами для створення нового об'єкта.
+     *
+     * @param type     тип одягу (напр. "Футболка")
+     * @param size     розмір (напр. "L")
+     * @param price    ціна (має бути більше 0)
+     * @param material матеріал з перерахування Material
+     * @throws IllegalArgumentException якщо вхідні дані некоректні
+     */
+    public Clothes(String type, String size, double price, Material material) {
         validateString(type, "Тип");
         validateString(size, "Розмір");
-        validateString(material, "Матеріал");
         validatePrice(price);
+        validateObject(material, "Матеріал");
 
         this.type = type;
         this.size = size;
         this.price = price;
         this.material = material;
+
+        instanceCount++; // Збільшуємо лічильник при створенні кожного нового об'єкта
     }
 
-    // Геттери та Сеттери з валідацією
+    /**
+     * Конструктор копіювання.
+     * Створює новий об'єкт на основі існуючого.
+     *
+     * @param other об'єкт, який потрібно скопіювати
+     * @throws IllegalArgumentException якщо об'єкт для копіювання є null
+     */
+    public Clothes(Clothes other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Об'єкт для копіювання не може бути null");
+        }
+        this.type = other.type;
+        this.size = other.size;
+        this.price = other.price;
+        this.material = other.material;
+
+        instanceCount++; // Копія — це теж новий об'єкт
+    }
+
+    /**
+     * Статичний метод для отримання кількості створених об'єктів.
+     * @return загальна кількість об'єктів Clothes
+     */
+    public static int getInstanceCount() {
+        return instanceCount;
+    }
+
+    // --- Геттери та Сеттери ---
 
     public String getType() {
         return type;
@@ -54,41 +94,41 @@ public class Clothes {
         this.price = price;
     }
 
-    public String getMaterial() {
+    public Material getMaterial() {
         return material;
     }
 
-    public void setMaterial(String material) {
-        validateString(material, "Матеріал");
+    public void setMaterial(Material material) {
+        validateObject(material, "Матеріал");
         this.material = material;
     }
 
-    /**
-     * Допоміжний метод для перевірки рядків.
-     */
+    // --- Методи валідації ---
+
     private void validateString(String value, String fieldName) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(fieldName + " не може бути порожнім");
         }
     }
 
-    /**
-     * Допоміжний метод для перевірки ціни.
-     */
     private void validatePrice(double price) {
-        if (price < 0) {
-            throw new IllegalArgumentException("Ціна не може бути від'ємною");
+        if (price <= 0) {
+            throw new IllegalArgumentException("Ціна повинна бути більшою за нуль");
         }
     }
 
+    private void validateObject(Object obj, String fieldName) {
+        if (obj == null) {
+            throw new IllegalArgumentException(fieldName + " не може бути null");
+        }
+    }
+
+    // --- Перевизначені методи ---
+
     @Override
     public String toString() {
-        return "Clothes{" +
-                "type='" + type + '\'' +
-                ", size='" + size + '\'' +
-                ", price=" + price +
-                ", material='" + material + '\'' +
-                '}';
+        return String.format("Одяг [Тип: %s, Розмір: %s, Матеріал: %s, Ціна: %.2f]",
+                type, size, material.getTitle(), price);
     }
 
     @Override
@@ -99,7 +139,7 @@ public class Clothes {
         return Double.compare(clothes.price, price) == 0 &&
                 Objects.equals(type, clothes.type) &&
                 Objects.equals(size, clothes.size) &&
-                Objects.equals(material, clothes.material);
+                material == clothes.material;
     }
 
     @Override
