@@ -12,10 +12,7 @@ public class Clothes {
     private double price;
     private Material material;
 
-    /** Статичне поле для підрахунку загальної кількості створених об'єктів */
-    private static int instanceCount = 0;
-
-    /**
+       /**
      * Конструктор з параметрами для створення нового об'єкта.
      *
      * @param type     тип одягу (напр. "Футболка")
@@ -35,7 +32,6 @@ public class Clothes {
         this.price = price;
         this.material = material;
 
-        instanceCount++; // Збільшуємо лічильник при створенні кожного нового об'єкта
     }
 
     /**
@@ -54,18 +50,9 @@ public class Clothes {
         this.price = other.price;
         this.material = other.material;
 
-        instanceCount++; // Копія — це теж новий об'єкт
     }
 
-    /**
-     * Статичний метод для отримання кількості створених об'єктів.
-     * @return загальна кількість об'єктів Clothes
-     */
-    public static int getInstanceCount() {
-        return instanceCount;
-    }
-
-    // --- Геттери та Сеттери ---
+   // --- Геттери та Сеттери ---
 
     public String getType() {
         return type;
