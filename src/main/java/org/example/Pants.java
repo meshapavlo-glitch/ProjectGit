@@ -8,6 +8,11 @@ public class Pants extends Clothes {
         this.length = length;
     }
 
+      public int getLength() {
+        return length;
+    }
+
+
     @Override
     public String toString() {
         return super.toString() + ", Довжина: " + length + " см (Штани)";
