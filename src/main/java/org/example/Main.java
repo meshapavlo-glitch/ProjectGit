@@ -2,144 +2,118 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.lang.NumberFormatException;
 
 /**
- * Головний клас програми для керування складом одягу.
- * Демонструє роботу з ArrayList, наслідування та поліморфізм.
+ * Driver-клас для керування ієрархією одягу.
+ * Реалізує меню, роботу з ArrayList та демонстрацію поліморфізму.
  */
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
 
-    // Єдина колекція для зберігання об'єктів базового та похідних типів
+    // Внутрішня колекція, яка на початку роботи програми є порожньою
     private static final ArrayList<Clothes> inventory = new ArrayList<>();
 
     public static void main(String[] args) {
-        printHeader();
         boolean running = true;
 
         while (running) {
-            displayMenu();
+            System.out.println("\n========== ГОЛОВНЕ МЕНЮ ==========");
+            System.out.println("1. Створити новий об’єкт");
+            System.out.println("2. Вивести інформацію про всі об’єкти");
+            System.out.println("3. Завершити роботу програми");
+            System.out.print("Виберіть опцію: ");
+
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1" -> addBaseClothes();
-                case "2" -> addPants();
-                case "3" -> addShirt();
-                case "4" -> showInventory();
-                case "5" -> {
-                    System.out.println("Програма завершена.");
+                case "1" -> showCreationMenu();
+                case "2" -> showInventory();
+                case "3" -> {
+                    System.out.println("Завершення роботи...");
                     running = false;
                 }
-                default -> System.out.println("Помилка: невірний вибір. Спробуйте ще раз.");
+                default -> System.out.println("Помилка: Невірний вибір. Спробуйте ще раз.");
             }
         }
     }
 
-    private static void displayMenu() {
-        System.out.println("\n--- ГОЛОВНЕ МЕНЮ (Колекції та Поліморфізм) ---");
-        System.out.println("1. Додати базовий одяг (Clothes)");
-        System.out.println("2. Додати штани (Pants)");
-        System.out.println("3. Додати сорочку (Shirt)");
-        System.out.println("4. Показати весь інвентар (Поліморфізм)");
-        System.out.println("5. Вихід");
-        System.out.print("Виберіть дію: ");
-    }
+    /**
+     * Опція 1: Меню створення об'єктів різних типів.
+     */
+    private static void showCreationMenu() {
+        System.out.println("\n--- ОБЕРІТЬ ТИП НОВОГО ОБ'ЄКТА ---");
+        System.out.println("1. Базовий одяг (Clothes)");
+        System.out.println("2. Штани (Pants)");
+        System.out.println("3. Сорочка (Shirt)");
+        System.out.println("4. Шкарпетки (Socks)");
+        System.out.println("5. Куртка (Jacket)");
+        System.out.println("0. Повернутися до головного меню");
+        System.out.print("Ваш вибір: ");
 
-    private static void addBaseClothes() {
+        String typeChoice = scanner.nextLine();
+
+        // Можливість повернення до головного меню без створення об'єкта
+        if (typeChoice.equals("0")) return;
+
         try {
-            System.out.println("\n--- Додавання базового одягу ---");
-            System.out.print("Введіть назву: ");
-            String type = scanner.nextLine();
-
-            System.out.print("Введіть ціну: ");
-            // Саме тут виникає NumberFormatException, якщо ввели "abc" замість "100"
-            double price = Double.parseDouble(scanner.nextLine());
-
-            inventory.add(new Clothes(type, "M", price, Material.COTTON));
-            System.out.println("Успішно додано!");
-
-        } catch (NumberFormatException e) {
-            // Якщо Double.parseDouble не зміг перетворити текст у число
-            System.out.println("Помилка: Ви ввели текст замість числа. Будь ласка, вкажіть ціну цифрами (напр. 100.50)");
-
-        } catch (IllegalArgumentException e) {
-            // Якщо ціна менша за нуль (ваша логіка з Clothes.java)
-            System.out.println("Помилка валідації: " + e.getMessage());
-
-        } catch (Exception e) {
-            // "Запасний" варіант для будь-яких інших помилок
-            System.out.println("Сталася непередбачувана помилка: " + e.getMessage());
-        }
-    }
-
-    private static void addPants() {
-        try {
-            System.out.println("\n--- Додавання штанів (Pants) ---");
+            // Загальні дані для всіх об'єктів
             System.out.print("Введіть розмір: ");
             String size = scanner.nextLine();
-
             System.out.print("Введіть ціну: ");
             double price = Double.parseDouble(scanner.nextLine());
 
-            System.out.print("Введіть довжину штанин (см): ");
-            int length = Integer.parseInt(scanner.nextLine());
-
-            // Додаємо в колекцію. Якщо ціна < 0, Clothes викине IllegalArgumentException
-            inventory.add(new Pants("Штани", size, price, Material.DENIM, length));
-            System.out.println("Штани успішно додано до інвентарю!");
-
+            switch (typeChoice) {
+                case "1" -> {
+                    inventory.add(new Clothes("Одяг", size, price, Material.COTTON));
+                    System.out.println("Об'єкт Clothes додано.");
+                }
+                case "2" -> {
+                    System.out.print("Введіть довжину штанин (см): ");
+                    int len = Integer.parseInt(scanner.nextLine());
+                    inventory.add(new Pants("Штани", size, price, Material.DENIM, len));
+                    System.out.println("Об'єкт Pants додано.");
+                }
+                case "3" -> {
+                    System.out.print("Чи має ґудзики? (true/false): ");
+                    boolean btn = Boolean.parseBoolean(scanner.nextLine());
+                    inventory.add(new Shirt("Сорочка", size, price, Material.COTTON, btn));
+                    System.out.println("Об'єкт Shirt додано.");
+                }
+                case "4" -> {
+                    System.out.print("Це високі шкарпетки? (true/false): ");
+                    boolean high = Boolean.parseBoolean(scanner.nextLine());
+                    inventory.add(new Socks("Шкарпетки", size, price, Material.WOOL, high));
+                    System.out.println("Об'єкт Socks додано.");
+                }
+                case "5" -> {
+                    System.out.print("Чи є капюшон? (true/false): ");
+                    boolean hood = Boolean.parseBoolean(scanner.nextLine());
+                    inventory.add(new Jacket("Куртка", size, price, Material.LEATHER, hood));
+                    System.out.println("Об'єкт Jacket додано.");
+                }
+                default -> System.out.println("Помилка: Невірний тип об'єкта.");
+            }
         } catch (NumberFormatException e) {
-            System.out.println("ПОМИЛКА: Ціна та довжина мають бути числами! (напр. 850.5 та 105)");
-        } catch (IllegalArgumentException e) {
-            System.out.println("ПОМИЛКА ВАЛІДАЦІЇ: " + e.getMessage());
-        }
-    }
-
-    private static void addShirt() {
-        try {
-            System.out.println("\n--- Додавання сорочки (Shirt) ---");
-            System.out.print("Введіть розмір: ");
-            String size = scanner.nextLine();
-
-            System.out.print("Введіть ціну: ");
-            double price = Double.parseDouble(scanner.nextLine());
-
-            System.out.print("Чи має ґудзики? (true/false): ");
-            boolean hasButtons = Boolean.parseBoolean(scanner.nextLine());
-
-            inventory.add(new Shirt("Сорочка", size, price, Material.COTTON, hasButtons));
-            System.out.println("Сорочку успішно додано!");
-
-        } catch (NumberFormatException e) {
-            System.out.println("ПОМИЛКА: Некоректний формат ціни.");
+            System.out.println("ПОМИЛКА: Вводьте лише числа для ціни та числових параметрів!");
         } catch (IllegalArgumentException e) {
             System.out.println("ПОМИЛКА ВАЛІДАЦІЇ: " + e.getMessage());
         }
     }
 
     /**
-     * Демонстрація поліморфізму: проходимо по списку Clothes,
-     * але для кожного об'єкта викликається його власна реалізація toString().
+     * Опція 2: Виведення всієї колекції через поліморфний виклик toString().
      */
     private static void showInventory() {
         if (inventory.isEmpty()) {
-            System.out.println("\nСклад порожній.");
+            System.out.println("\nКолекція порожня. Додайте спочатку об'єкти.");
             return;
         }
 
-        System.out.println("\n ВМІСТ СКЛАДУ (Поліморфне виведення) ");
+        System.out.println("\n========== ВМІСТ КОЛЕКЦІЇ (Поліморфізм) ==========");
         for (Clothes item : inventory) {
-            // Тут працює поліморфізм: item може бути Clothes, Pants або Shirt
+            // Поліморфізм: викликається toString відповідного похідного класу
             System.out.println(item.toString());
         }
-        System.out.println("===========================================");
-    }
-
-    private static void printHeader() {
-        System.out.println("*******************************************");
-        System.out.println("* Лабораторна робота: Колекції та Наслідування *");
-        System.out.println("* Виконав: Павло Меша                     *");
-        System.out.println("*******************************************");
+        System.out.println("==================================================");
     }
 }
