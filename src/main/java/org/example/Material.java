@@ -7,6 +7,7 @@ public enum Material {
     COTTON("Бавовна"),
     DENIM("Денім"),
     WOOL("Вовна"),
+    LEATHER("Шкіра"),
     POLYESTER("Поліестер");
 
     private final String title;
