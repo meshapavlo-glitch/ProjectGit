@@ -7,6 +7,9 @@ public class Shirt extends Clothes {
         super(type, size, price, material);
         this.hasButtons = hasButtons;
     }
+      public boolean isHasButtons() {
+        return hasButtons;
+    }
 
     @Override
     public String toString() {
