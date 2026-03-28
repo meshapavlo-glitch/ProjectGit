@@ -7,6 +7,9 @@ public class Socks extends Clothes {
         super(type, size, price, material);
         this.isHigh = isHigh;
     }
+       public boolean isHigh() {
+        return isHigh;
+    }
 
     @Override
     public String toString() {
