@@ -1,0 +1,58 @@
+package org.example;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Properties;
+
+public class DatabaseManager {
+    private final String url;
+    private final String user;
+    private final String password;
+
+    public DatabaseManager(String configPath) throws IOException {
+        Properties props = new Properties();
+        try (FileInputStream fis = new FileInputStream(configPath)) {
+            props.load(fis);
+        }
+        this.url = props.getProperty("db.url");
+        this.user = props.getProperty("db.user");
+        this.password = props.getProperty("db.password");
+    }
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    public void insertClothes(Clothes c, int quantity) {
+        String sql = "INSERT INTO inventory (type, size, price, material, special_attribute, quantity) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, c.getClass().getSimpleName());
+            pstmt.setString(2, c.getSize());
+            pstmt.setDouble(3, c.getPrice());
+            pstmt.setString(4, c.getMaterial().name());
+
+            // Специфічні атрибути
+            if (c instanceof Pants p) pstmt.setString(5, String.valueOf(p.getLength()));
+            else if (c instanceof Shirt s) pstmt.setString(5, String.valueOf(s.isHasButtons()));
+            else if (c instanceof Socks so) pstmt.setString(5, String.valueOf(so.isHigh()));
+            else if (c instanceof Jacket j) pstmt.setString(5, String.valueOf(j.isHasHood()));
+            else pstmt.setNull(5, java.sql.Types.VARCHAR);
+
+            // Додаємо кількість
+            pstmt.setInt(6, quantity);
+
+            pstmt.executeUpdate();
+            System.out.println("[DB] Запис успішно створено.");
+
+        } catch (SQLException e) {
+            System.err.println("[DB Error] " + e.getMessage());
+        }
+    }
+}
