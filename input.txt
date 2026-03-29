@@ -1,6 +1,9 @@
-Clothes;L;500.0;COTTON
-Pants;M;850.5;DENIM;105
-Jacket;XL;1500.0;LEATHER;true
-Socks;S;120.0;WOOL;false
-Shirt;L;600.0;COTTON;true
-Socks;S;155.0;WOOL;true
+Clothes;L;500.0;COTTON;15
+Pants;M;850.5;DENIM;105;5
+Shirt;S;600.0;COTTON;true;12
+Socks;M;120.0;WOOL;false;50
+Jacket;XL;1500.0;LEATHER;true;3
+Pants;L;900.0;DENIM;110;7
+Shirt;M;700.0;WOOL;false;8
+Jacket;XXL;5090.0;LEATHER;false;6
+
