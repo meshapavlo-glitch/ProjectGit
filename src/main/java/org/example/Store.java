@@ -1,20 +1,18 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Store {
     private ArrayList<InventoryItem> items = new ArrayList<>();
 
-    // Метод додавання з урахуванням кількості
     public void addNewClothes(Clothes cl, int quantity) {
         for (InventoryItem item : items) {
-            // Перевіряємо, чи такий товар уже є (порівнюємо за змістом)
-            if (item.getClothes().toString().equals(cl.toString())) {
+            if (item.getClothes().equals(cl)) {
                 item.addQuantity(quantity);
                 return;
             }
         }
-        // Якщо товару немає, додаємо новий запис
         items.add(new InventoryItem(cl, quantity));
     }
 
@@ -22,28 +20,30 @@ public class Store {
         return items;
     }
 
-    // Методи пошуку (перенесені з Main)
-    public ArrayList<InventoryItem> searchByMaterial(Material mat) {
-        ArrayList<InventoryItem> result = new ArrayList<>();
-        for (InventoryItem item : items) {
-            if (item.getClothes().getMaterial() == mat) result.add(item);
-        }
-        return result;
+    // Метод для отримання відсортованого списку
+    public List<InventoryItem> getSortedItems() {
+        List<InventoryItem> sorted = new ArrayList<>(items);
+        // Сортуємо копію, використовуючи метод compareTo з класу Clothes
+        sorted.sort((a, b) -> a.getClothes().compareTo(b.getClothes()));
+        return sorted;
     }
 
-    public ArrayList<InventoryItem> searchByMaxPrice(double maxPrice) {
-        ArrayList<InventoryItem> result = new ArrayList<>();
-        for (InventoryItem item : items) {
-            if (item.getClothes().getPrice() <= maxPrice) result.add(item);
-        }
-        return result;
+    // Методи пошуку
+    public ArrayList<InventoryItem> searchByMaterial(Material mat) {
+        ArrayList<InventoryItem> res = new ArrayList<>();
+        for (InventoryItem i : items) if (i.getClothes().getMaterial() == mat) res.add(i);
+        return res;
+    }
+
+    public ArrayList<InventoryItem> searchByMaxPrice(double max) {
+        ArrayList<InventoryItem> res = new ArrayList<>();
+        for (InventoryItem i : items) if (i.getClothes().getPrice() <= max) res.add(i);
+        return res;
     }
 
     public ArrayList<InventoryItem> searchBySize(String size) {
-        ArrayList<InventoryItem> result = new ArrayList<>();
-        for (InventoryItem item : items) {
-            if (item.getClothes().getSize().equalsIgnoreCase(size)) result.add(item);
-        }
-        return result;
+        ArrayList<InventoryItem> res = new ArrayList<>();
+        for (InventoryItem i : items) if (i.getClothes().getSize().equalsIgnoreCase(size)) res.add(i);
+        return res;
     }
 }
