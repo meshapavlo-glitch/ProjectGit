@@ -1,0 +1,164 @@
+package org.example;
+
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+
+public class MainApp extends Application {
+    private final Store store = new Store();
+    private final ListView<String> listView = new ListView<>();
+    private final TextArea resultArea = new TextArea();
+
+    @Override
+    public void start(Stage primaryStage) {
+        // --- Поля вводу ---
+        ComboBox<String> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll("Штани", "Сорочка", "Шкарпетки", "Куртка");
+        typeBox.setPromptText("Оберіть тип");
+
+        TextField sizeField = new TextField();
+        sizeField.setPromptText("Розмір");
+
+        TextField priceField = new TextField();
+        priceField.setPromptText("Ціна");
+
+        Button addButton = new Button("Додати до колекції");
+
+        // --- Поля пошуку ---
+        TextField searchField = new TextField();
+        searchField.setPromptText("Введіть UUID для пошуку");
+        Button searchButton = new Button("Знайти за UUID");
+
+        // Налаштування виводу деталей (Area)
+        resultArea.setEditable(false);
+        resultArea.setPrefHeight(150);
+
+        // --- ЛОГІКА: Копіювання UUID при кліку на елемент списку ---
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                // Витягуємо UUID, який іде після ": "
+                String uuidOnly = newVal.substring(newVal.lastIndexOf(": ") + 2);
+                searchField.setText(uuidOnly);
+            }
+        });
+
+        // --- ЛОГІКА: Кнопка Додати ---
+        addButton.setOnAction(e -> {
+            try {
+                String type = typeBox.getValue();
+                String size = sizeField.getText();
+                String priceText = priceField.getText();
+
+                if (type == null || size.isEmpty() || priceText.isEmpty()) {
+                    throw new IllegalArgumentException("Заповніть всі основні поля!");
+                }
+
+                double price = Double.parseDouble(priceText);
+                Clothes item = null;
+
+                // Створення конкретних об'єктів ієрархії
+                switch (type) {
+                    case "Штани" -> item = new Pants("Штани", size, price, Material.DENIM, 100);
+                    case "Сорочка" -> item = new Shirt("Сорочка", size, price, Material.COTTON, true);
+                    case "Шкарпетки" -> item = new Socks("Шкарпетки", size, price, Material.WOOL, false);
+                    case "Куртка" -> item = new Jacket("Куртка", size, price, Material.LEATHER, true);
+                }
+
+                if (item != null) {
+                    store.addNewClothes(item, 1);
+                    updateList(); // Оновлюємо візуальний список
+
+                    // Очищення полів
+                    sizeField.clear();
+                    priceField.clear();
+                    typeBox.setValue(null);
+                    System.out.println("Додано: " + item.getType() + " | UUID: " + item.getUuid());
+                }
+
+            } catch (NumberFormatException ex) {
+                showError("Ціна має бути числом (наприклад, 500 або 500.50)");
+            } catch (Exception ex) {
+                showError("Помилка: " + ex.getMessage());
+            }
+        });
+
+        // --- ЛОГІКА: Кнопка Пошуку ---
+        searchButton.setOnAction(e -> {
+            try {
+                String inputId = searchField.getText().trim();
+                if (inputId.isEmpty()) {
+                    showError("Введіть UUID!");
+                    return;
+                }
+
+                UUID id = UUID.fromString(inputId);
+                InventoryItem found = store.searchByUuid(id);
+
+                if (found != null) {
+                    // Виводимо повну інформацію про знайдений об'єкт
+                    resultArea.setText("--- РЕЗУЛЬТАТ ПОШУКУ ---\n" +
+                            found.getClothes().toString() +
+                            "\nКількість на складі: " + found.getQuantity());
+                } else {
+                    resultArea.setText("Об'єкт з UUID:\n" + id + "\nНЕ ЗНАЙДЕНО.");
+                }
+            } catch (IllegalArgumentException ex) {
+                showError("Некоректний формат UUID! Перевірте правильність ідентифікатора.");
+            }
+        });
+
+        // --- КОМПОНУВАННЯ (Layout) ---
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(20));
+        layout.getChildren().addAll(
+                new Label("ДОДАВАННЯ ТОВАРУ:"),
+                typeBox, sizeField, priceField, addButton,
+                new Separator(),
+                new Label("КОРОТКИЙ СПИСОК (Клікніть для копіювання ID):"),
+                listView,
+                new Separator(),
+                new Label("ПОШУК ЗА UUID:"),
+                searchField, searchButton, resultArea
+        );
+
+        // Налаштування сцени та вікна
+        primaryStage.setScene(new Scene(layout, 480, 700));
+        primaryStage.setTitle("Clothes Manager GUI ");
+        primaryStage.show();
+    }
+
+    /**
+     * Оновлює ListView короткими записами про товари
+     */
+    private void updateList() {
+        listView.getItems().clear();
+        List<InventoryItem> items = store.getItems();
+        for (InventoryItem item : items) {
+            Clothes c = item.getClothes();
+            // Формат "коротко": Тип | ID: UUID
+            listView.getItems().add(c.getType() + " | ID: " + c.getUuid());
+        }
+    }
+
+    /**
+     * Виводить спливаюче вікно з помилкою
+     */
+    private void showError(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Виникла помилка");
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
