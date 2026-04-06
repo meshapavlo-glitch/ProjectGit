@@ -17,7 +17,7 @@ public class Main {
 
         boolean running = true;
         while (running) {
-            System.out.println("\n--- МЕНЮ МАГАЗИНУ ---");
+            System.out.println("\n--- МЕНЮ МАГАЗИНУ (Лямбда-вирази) ---");
             System.out.println("1. Додати товар");
             System.out.println("2. Пошук");
             System.out.println("3. Весь список (як є)");
@@ -30,7 +30,7 @@ public class Main {
                 case "1" -> showAddMenu();
                 case "2" -> showSearchMenu();
                 case "3" -> displayList(store.getItems());
-                case "4" -> showSortSubMenu(); // Виклик підменю сортування
+                case "4" -> showSortSubMenu();
                 case "5" -> {
                     saveToFile();
                     running = false;
@@ -41,8 +41,7 @@ public class Main {
     }
 
     /**
-     * Підменю для вибору критерію сортування.
-     * Використовує анонімні внутрішні класи.
+     * Підменю сортування з використанням ЛЯМБДА-ВИРАЗІВ.
      */
     private static void showSortSubMenu() {
         List<InventoryItem> sortedList = new ArrayList<>(store.getItems());
@@ -52,7 +51,7 @@ public class Main {
             return;
         }
 
-        System.out.println("\nОберіть критерій сортування:");
+        System.out.println("\nОберіть критерій сортування (Lambda Edition):");
         System.out.println("1. За ціною (від найменшої)");
         System.out.println("2. За типом (алфавітний порядок)");
         System.out.println("3. За кількістю на складі (від найбільшої)");
@@ -64,38 +63,16 @@ public class Main {
 
         switch (sortChoice) {
             case "1":
-                // Критерий 1: Ціна (через анонімний клас)
-                comparator = new Comparator<InventoryItem>() {
-                    @Override
-                    public int compare(InventoryItem o1, InventoryItem o2) {
-                        double p1 = o1.getClothes().getPrice();
-                        double p2 = o2.getClothes().getPrice();
-                        return Double.compare(p1, p2);
-                    }
-                };
+                // Лямбда-вираз для ціни
+                comparator = (o1, o2) -> Double.compare(o1.getClothes().getPrice(), o2.getClothes().getPrice());
                 break;
             case "2":
-                // Критерий 2: Тип одягу (через анонімний клас)
-                comparator = new Comparator<InventoryItem>() {
-                    @Override
-                    public int compare(InventoryItem o1, InventoryItem o2) {
-                        String t1 = o1.getClothes().getType();
-                        String t2 = o2.getClothes().getType();
-                        return t1.compareTo(t2);
-                    }
-                };
+                // Лямбда-вираз для типу (алфавіт)
+                comparator = (o1, o2) -> o1.getClothes().getType().compareTo(o2.getClothes().getType());
                 break;
             case "3":
-                // Критерий 3: Кількість (через анонімний клас)
-                comparator = new Comparator<InventoryItem>() {
-                    @Override
-                    public int compare(InventoryItem o1, InventoryItem o2) {
-                        int q1 = o1.getQuantity();
-                        int q2 = o2.getQuantity();
-                        // Сортування від більшого до меншого
-                        return Integer.compare(q2, q1);
-                    }
-                };
+                // Лямбда-вираз для кількості (спадання)
+                comparator = (o1, o2) -> Integer.compare(o2.getQuantity(), o1.getQuantity());
                 break;
             case "0":
                 return;
@@ -105,8 +82,8 @@ public class Main {
         }
 
         if (comparator != null) {
-            Collections.sort(sortedList, comparator);
-            System.out.println("\n--- ВІДСОРТОВАНИЙ СПИСОК ---");
+            sortedList.sort(comparator); // Використовуємо метод sort самого списку
+            System.out.println("\n--- РЕЗУЛЬТАТ СОРТУВАННЯ ---");
             displayList(sortedList);
         }
     }
@@ -114,7 +91,7 @@ public class Main {
     private static void showAddMenu() {
         System.out.println("\n--- ДОДАВАННЯ ТОВАРУ ---");
         System.out.println("1. Pants | 2. Shirt | 3. Socks | 4. Jacket");
-        String type = scanner.nextLine();
+        String typeChoice = scanner.nextLine();
 
         try {
             System.out.print("Розмір: ");
@@ -125,7 +102,7 @@ public class Main {
             int q = Integer.parseInt(scanner.nextLine());
 
             Clothes obj = null;
-            switch (type) {
+            switch (typeChoice) {
                 case "1" -> {
                     System.out.print("Довжина (см): ");
                     int len = Integer.parseInt(scanner.nextLine());
@@ -152,13 +129,8 @@ public class Main {
                 store.addNewClothes(obj, q);
                 System.out.println("Успішно додано!");
             }
-
-        } catch (NumberFormatException e) {
-            System.out.println("ПОМИЛКА: Введено не число!");
-        } catch (IllegalArgumentException e) {
-            System.out.println("ПОМИЛКА ВАЛІДАЦІЇ: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Помилка: " + e.getMessage());
+            System.out.println("Помилка валідації: " + e.getMessage());
         }
     }
 
@@ -166,9 +138,8 @@ public class Main {
         if (list.isEmpty()) {
             System.out.println("Список порожній.");
         } else {
-            for (InventoryItem item : list) {
-                System.out.println(item);
-            }
+            // Тут також можна використати метод посилання або лямбду для виводу
+            list.forEach(item -> System.out.println(item));
         }
     }
 
@@ -178,10 +149,10 @@ public class Main {
         List<InventoryItem> res = new ArrayList<>();
         try {
             if (c.equals("1")) {
-                System.out.print("Введіть матеріал: ");
+                System.out.print("Матеріал (напр. COTTON): ");
                 res = store.searchByMaterial(Material.valueOf(scanner.nextLine().toUpperCase()));
             } else if (c.equals("2")) {
-                System.out.print("Максимальна ціна: ");
+                System.out.print("Макс. ціна: ");
                 res = store.searchByMaxPrice(Double.parseDouble(scanner.nextLine()));
             } else if (c.equals("3")) {
                 System.out.print("Розмір: ");
