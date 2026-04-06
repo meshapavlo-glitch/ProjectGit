@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Store {
     private ArrayList<InventoryItem> items = new ArrayList<>();
@@ -45,5 +46,14 @@ public class Store {
         ArrayList<InventoryItem> res = new ArrayList<>();
         for (InventoryItem i : items) if (i.getClothes().getSize().equalsIgnoreCase(size)) res.add(i);
         return res;
+    }
+
+    public InventoryItem searchByUuid(UUID targetUuid) {
+        for (InventoryItem item : items) {
+            if (item.getClothes().getUuid().equals(targetUuid)) {
+                return item;
+            }
+        }
+        return null;
     }
 }
