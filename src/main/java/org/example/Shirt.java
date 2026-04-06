@@ -3,11 +3,14 @@ package org.example;
 public class Shirt extends Clothes {
     private boolean hasButtons; // Чи є ґудзики
 
-    public Shirt(String type, String size, double price, Material material, boolean hasButtons) {
+    public Shirt(String type, String size, double price, Material material, boolean hasButtons)
+            throws InvalidFieldValueException
+    {
         super(type, size, price, material);
         this.hasButtons = hasButtons;
     }
-      public boolean isHasButtons() {
+
+    public boolean isHasButtons() {
         return hasButtons;
     }
 

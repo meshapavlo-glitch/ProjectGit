@@ -99,18 +99,37 @@ public class Main {
         String typeChoice = scanner.nextLine();
 
         try {
+            // Перевірка вибору типу одразу
+            if (!List.of("1", "2", "3", "4").contains(typeChoice)) {
+                throw new InvalidFieldValueException("Невірний вибір типу одягу.");
+            }
+
             System.out.print("Розмір: ");
             String s = scanner.nextLine();
+
             System.out.print("Ціна: ");
-            double p = Double.parseDouble(scanner.nextLine());
+            double p;
+            try {
+                p = Double.parseDouble(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                throw new InvalidFieldValueException("Ціна повинна бути числом.");
+            }
+
             System.out.print("Кількість: ");
-            int q = Integer.parseInt(scanner.nextLine());
+            int q;
+            try {
+                q = Integer.parseInt(scanner.nextLine());
+                if (q < 0) throw new InvalidFieldValueException("Кількість не може бути від'ємною.");
+            } catch (NumberFormatException e) {
+                throw new InvalidFieldValueException("Кількість повинна бути цілим числом.");
+            }
 
             Clothes obj = null;
             switch (typeChoice) {
                 case "1" -> {
                     System.out.print("Довжина (см): ");
                     int len = Integer.parseInt(scanner.nextLine());
+                    // Конструктор Pants може викинути InvalidFieldValueException
                     obj = new Pants("Штани", s, p, Material.DENIM, len);
                 }
                 case "2" -> {
@@ -130,16 +149,25 @@ public class Main {
                 }
             }
 
+            // Додавання в Store (агрегуючий клас)
             if (obj != null) {
                 store.addNewClothes(obj, q);
-                System.out.println("Успішно додано!");
-                System.out.println("Повний UUID для копіювання: " + obj.getUuid());
+                System.out.println("\n--- УСПІШНО ДОДАНО ---");
+                System.out.println("Товар: " + obj.getType() + " [" + s + "]");
+                System.out.println("ID: " + obj.getUuid());
             }
-        } catch (Exception e) {
-            System.out.println("Помилка валідації: " + e.getMessage());
-        }
-    }
 
+        } catch (InvalidFieldValueException e) {
+            // Перехоплюємо нашу власну помилку валідації полів
+            System.out.println("ПОМИЛКА ВВОДУ: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("ПОМИЛКА: Введено рядок замість числа.");
+        } catch (Exception e) {
+            // Запобіжник для непередбачуваних ситуацій
+            System.out.println("КРИТИЧНА ПОМИЛКА: " + e.getMessage());
+        }
+        // Повернення в головне меню відбувається автоматично після завершення блоку try-catch
+    }
     private static void showUpdateMenu() {
         System.out.print("Введіть UUID об'єкта для модифікації: ");
         String uuidStr = scanner.nextLine();
@@ -179,8 +207,16 @@ public class Main {
 
             if (updatedClothes != null) {
                 InventoryItem newItem = new InventoryItem(updatedClothes, newQty);
-                if (store.update(id, newItem)) {
+                try {
+                    // Тепер ми не використовуємо if, а просто викликаємо метод
+                    store.update(id, newItem);
+
+                    // Якщо метод вище не викинув виняток, значить все добре
                     System.out.println("Дані успішно оновлено!");
+
+                } catch (ItemNotFoundException e) {
+                    // Якщо об'єкт не знайдено, ми потрапляємо сюди
+                    System.out.println("Помилка оновлення: " + e.getMessage());
                 }
             }
 
@@ -192,46 +228,51 @@ public class Main {
     }
 
     private static void showDeleteMenu() {
-        // Перевірка на порожню колекцію перед початком
+        // 1. Попередня перевірка на рівні драйвера (для зручності користувача)
         if (store.getItems().isEmpty()) {
-            System.out.println("Склад порожній. Нічого видаляти.");
+            System.out.println("Склад порожній. Операція видалення неможлива.");
             return;
         }
 
-        System.out.print("Введіть UUID об'єкта, який бажаєте ВИДАЛИТИ: ");
+        System.out.print("Введіть UUID об'єкта для ВИДАЛЕННЯ: ");
         String uuidStr = scanner.nextLine();
 
         try {
+            // 2. Валідація формату (стандартний Java виняток)
             UUID id = UUID.fromString(uuidStr);
 
-            // Пошук об'єкта для підтвердження (опціонально, але рекомендовано)
+            // 3. Знаходимо об'єкт для підтвердження.
+            // Примітка: якщо searchByUuid теж викидає ItemNotFoundException,
+            // код стане ще коротшим.
             InventoryItem toDelete = store.searchByUuid(id);
 
             if (toDelete == null) {
-                System.out.println("Об'єкт з таким UUID не знайдено.");
+                // Можна викинути виняток прямо тут, щоб піти в блок catch
+                throw new ItemNotFoundException("Товар з ID " + id + " не знайдено.");
+            }
+
+            System.out.println("Буде видалено: " + toDelete);
+            System.out.print("Підтвердити видалення? (так/ні): ");
+            if (!scanner.nextLine().equalsIgnoreCase("так")) {
+                System.out.println("Видалення скасовано користувачем.");
                 return;
             }
 
-            System.out.println("Ви збираєтеся видалити: " + toDelete);
-            System.out.print("Ви впевнені? (так/ні): ");
-            String confirm = scanner.nextLine().toLowerCase();
+            // 4. ВИКЛИК АГРЕГАТОРА (Головна вимога)
+            // Метод delete(id) тепер не повертає boolean, а викидає ItemNotFoundException
+            store.delete(id);
 
-            if (confirm.equals("так")) {
-                // Виклик методу агрегуючого класу
-                boolean deleted = store.delete(id);
-
-                if (deleted) {
-                    System.out.println("Товар успішно видалено зі складу.");
-                } else {
-                    System.out.println("Помилка під час видалення.");
-                }
-            } else {
-                System.out.println("Видалення скасовано.");
-            }
+            System.out.println("Результат: Товар успішно вилучено з бази даних.");
 
         } catch (IllegalArgumentException e) {
-            System.out.println("ПОМИЛКА: Некоректний формат UUID.");
+            System.out.println("ПОМИЛКА ФОРМАТУ: Рядок '" + uuidStr + "' не є коректним UUID.");
+        } catch (ItemNotFoundException e) {
+            // Перехоплюємо ваш власний виняток
+            System.out.println("ЛОГІЧНА ПОМИЛКА: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("КРИТИЧНА ПОМИЛКА: " + e.getMessage());
         }
+        // Програма продовжує роботу, повертаючись до головного циклу меню
     }
 
     private static void displayList(List<InventoryItem> list) {
