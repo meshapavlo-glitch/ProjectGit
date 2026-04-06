@@ -10,15 +10,20 @@ public abstract class Clothes implements Comparable<Clothes>, Identifiable {
     protected double price;
     protected Material material;
 
-    public Clothes(String type, String size, double price, Material material) {
-        // Автоматична генерація UUID при створенні об'єкта
+    public Clothes(String type, String size, double price, Material material) throws InvalidFieldValueException {
+        if (price < 0) {
+            throw new InvalidFieldValueException("Ціна не може бути від'ємною: " + price);
+        }
+        if (size == null || size.trim().isEmpty()) {
+            throw new InvalidFieldValueException("Розмір не може бути порожнім.");
+        }
         this.uuid = UUID.randomUUID();
-
         this.type = type;
         this.size = size;
         this.price = price;
         this.material = material;
     }
+
     private void validateString(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(fieldName + " не може бути порожнім");
