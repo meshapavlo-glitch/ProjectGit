@@ -31,6 +31,10 @@ public abstract class Clothes implements Comparable<Clothes>, Identifiable {
         }
     }
 
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
     // Реалізація методу з інтерфейсу Identifiable
     @Override
     public UUID getUuid() {

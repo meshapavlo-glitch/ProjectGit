@@ -48,6 +48,39 @@ public class Store {
         return res;
     }
 
+    /**
+     * Оновлює дані об'єкта за його UUID
+     * @param targetId ідентифікатор об'єкта, який шукаємо
+     * @param newItem новий об'єкт з оновленими даними
+     * @return true, якщо об'єкт знайдено і оновлено
+     */
+    public boolean update(UUID targetId, InventoryItem newItem) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getClothes().getUuid().equals(targetId)) {
+                // Зберігаємо старий UUID для нового об'єкта
+                newItem.getClothes().setUuid(targetId);
+                // Замінюємо старий елемент новим у списку
+                items.set(i, newItem);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Видаляє об'єкт з колекції за його UUID.
+     * @param targetId UUID об'єкта для видалення
+     * @return true, якщо об'єкт знайдено і видалено, false — якщо не знайдено
+     */
+    public boolean delete(UUID targetId) {
+        if (items.isEmpty()) {
+            return false;
+        }
+
+        // Використовуємо ітератор або RemoveIf для безпечного видалення під час обходу
+        return items.removeIf(item -> item.getClothes().getUuid().equals(targetId));
+    }
+
     public InventoryItem searchByUuid(UUID targetUuid) {
         for (InventoryItem item : items) {
             if (item.getClothes().getUuid().equals(targetUuid)) {

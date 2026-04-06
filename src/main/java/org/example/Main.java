@@ -23,6 +23,8 @@ public class Main {
             System.out.println("2. Пошук");
             System.out.println("3. Весь список (як є)");
             System.out.println("4. Сортувати та вивести");
+            System.out.println("6. Модифікувати товар за UUID");
+            System.out.println("7. Видалити товар за UUID");
             System.out.println("5. Вихід");
             System.out.print("Вибір: ");
 
@@ -32,6 +34,8 @@ public class Main {
                 case "2" -> showSearchMenu();
                 case "3" -> displayList(store.getItems());
                 case "4" -> showSortSubMenu();
+                case "6" -> showUpdateMenu();
+                case "7" -> showDeleteMenu();
                 case "5" -> {
                     saveToFile();
                     running = false;
@@ -133,6 +137,100 @@ public class Main {
             }
         } catch (Exception e) {
             System.out.println("Помилка валідації: " + e.getMessage());
+        }
+    }
+
+    private static void showUpdateMenu() {
+        System.out.print("Введіть UUID об'єкта для модифікації: ");
+        String uuidStr = scanner.nextLine();
+
+        try {
+            UUID id = UUID.fromString(uuidStr);
+            InventoryItem existing = store.searchByUuid(id);
+
+            if (existing == null) {
+                System.out.println("Об'єкт з таким UUID не знайдено.");
+                return;
+            }
+
+            System.out.println("Знайдено: " + existing);
+            System.out.println("Введіть нові дані (тип змінити не можна, тільки атрибути):");
+
+            System.out.print("Новий розмір: ");
+            String newSize = scanner.nextLine();
+            System.out.print("Нова ціна: ");
+            double newPrice = Double.parseDouble(scanner.nextLine());
+            System.out.print("Нова кількість: ");
+            int newQty = Integer.parseInt(scanner.nextLine());
+
+            Clothes updatedClothes = null;
+            Clothes old = existing.getClothes();
+
+            // Створюємо новий об'єкт того ж типу, що й був
+            if (old instanceof Pants) {
+                updatedClothes = new Pants(old.getType(), newSize, newPrice, old.getMaterial(), 100);
+            } else if (old instanceof Shirt) {
+                updatedClothes = new Shirt(old.getType(), newSize, newPrice, old.getMaterial(), true);
+            } else if (old instanceof Socks) {
+                updatedClothes = new Socks(old.getType(), newSize, newPrice, old.getMaterial(), false);
+            } else if (old instanceof Jacket) {
+                updatedClothes = new Jacket(old.getType(), newSize, newPrice, old.getMaterial(), true);
+            }
+
+            if (updatedClothes != null) {
+                InventoryItem newItem = new InventoryItem(updatedClothes, newQty);
+                if (store.update(id, newItem)) {
+                    System.out.println("Дані успішно оновлено!");
+                }
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Помилка: Некоректний формат UUID.");
+        } catch (Exception e) {
+            System.out.println("Помилка при введенні даних: " + e.getMessage());
+        }
+    }
+
+    private static void showDeleteMenu() {
+        // Перевірка на порожню колекцію перед початком
+        if (store.getItems().isEmpty()) {
+            System.out.println("Склад порожній. Нічого видаляти.");
+            return;
+        }
+
+        System.out.print("Введіть UUID об'єкта, який бажаєте ВИДАЛИТИ: ");
+        String uuidStr = scanner.nextLine();
+
+        try {
+            UUID id = UUID.fromString(uuidStr);
+
+            // Пошук об'єкта для підтвердження (опціонально, але рекомендовано)
+            InventoryItem toDelete = store.searchByUuid(id);
+
+            if (toDelete == null) {
+                System.out.println("Об'єкт з таким UUID не знайдено.");
+                return;
+            }
+
+            System.out.println("Ви збираєтеся видалити: " + toDelete);
+            System.out.print("Ви впевнені? (так/ні): ");
+            String confirm = scanner.nextLine().toLowerCase();
+
+            if (confirm.equals("так")) {
+                // Виклик методу агрегуючого класу
+                boolean deleted = store.delete(id);
+
+                if (deleted) {
+                    System.out.println("Товар успішно видалено зі складу.");
+                } else {
+                    System.out.println("Помилка під час видалення.");
+                }
+            } else {
+                System.out.println("Видалення скасовано.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("ПОМИЛКА: Некоректний формат UUID.");
         }
     }
 
