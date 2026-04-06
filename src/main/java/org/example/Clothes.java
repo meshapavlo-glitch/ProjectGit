@@ -1,20 +1,24 @@
 package org.example;
 
 import java.util.Objects;
+import java.util.UUID;
 
-public abstract class Clothes implements Comparable<Clothes> {
+public abstract class Clothes implements Comparable<Clothes>, Identifiable {
+    protected UUID uuid;
     protected String type;
     protected String size;
     protected double price;
     protected Material material;
 
     public Clothes(String type, String size, double price, Material material) {
+        // Автоматична генерація UUID при створенні об'єкта
+        this.uuid = UUID.randomUUID();
+
         this.type = type;
         this.size = size;
         this.price = price;
         this.material = material;
     }
-
     private void validateString(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(fieldName + " не може бути порожнім");
@@ -26,6 +30,13 @@ public abstract class Clothes implements Comparable<Clothes> {
             throw new IllegalArgumentException("Ціна повинна бути більшою за 0");
         }
     }
+
+    // Реалізація методу з інтерфейсу Identifiable
+    @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+
     // Реалізація Comparable: порівняння за ціною
     @Override
     public int compareTo(Clothes other) {
@@ -39,10 +50,10 @@ public abstract class Clothes implements Comparable<Clothes> {
 
     @Override
     public String toString() {
-        return String.format("%s [Розмір: %s, Матеріал: %s, Ціна: %.2f]",
-                type, size, material.getTitle(), price);
+        String shortId = uuid.toString().substring(0, 8);
+        return String.format("[%s...] %s [Розмір: %s, Матеріал: %s, Ціна: %.2f]",
+                shortId, type, size, material.getTitle(), price);
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

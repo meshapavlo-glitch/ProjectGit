@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class Main {
     private static final String FILE_NAME = "input.txt";
@@ -17,7 +18,7 @@ public class Main {
 
         boolean running = true;
         while (running) {
-            System.out.println("\n--- МЕНЮ МАГАЗИНУ (Лямбда-вирази) ---");
+            System.out.println("\n--- МЕНЮ МАГАЗИНУ ---");
             System.out.println("1. Додати товар");
             System.out.println("2. Пошук");
             System.out.println("3. Весь список (як є)");
@@ -128,6 +129,7 @@ public class Main {
             if (obj != null) {
                 store.addNewClothes(obj, q);
                 System.out.println("Успішно додано!");
+                System.out.println("Повний UUID для копіювання: " + obj.getUuid());
             }
         } catch (Exception e) {
             System.out.println("Помилка валідації: " + e.getMessage());
@@ -144,22 +146,48 @@ public class Main {
     }
 
     private static void showSearchMenu() {
-        System.out.println("1. Матеріал | 2. Ціна | 3. Розмір");
-        String c = scanner.nextLine();
-        List<InventoryItem> res = new ArrayList<>();
+        System.out.println("\n--- ПОШУК ---");
+        System.out.println("1. Матеріал | 2. Ціна | 3. Розмір | 4. UUID");
+        String choice = scanner.nextLine();
+
         try {
-            if (c.equals("1")) {
-                System.out.print("Матеріал (напр. COTTON): ");
+            if (choice.equals("4")) {
+                System.out.print("Введіть повний UUID об'єкта: ");
+                String uuidInput = scanner.nextLine();
+
+                try {
+                    // Перетворення рядка в об'єкт UUID
+                    UUID targetId = UUID.fromString(uuidInput);
+                    InventoryItem found = store.searchByUuid(targetId);
+
+                    if (found != null) {
+                        System.out.println("Знайдено товар: " + found);
+                    } else {
+                        System.out.println("Товар з таким UUID не знайдено.");
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println("ПОМИЛКА: Некоректний формат UUID. Приклад: 550e8400-e29b-41d4-a716-446655440000");
+                }
+                return; // Вихід з методу пошуку
+            }
+
+            // Стара логіка пошуку для пунктів 1, 2, 3...
+            List<InventoryItem> res = new ArrayList<>();
+            if (choice.equals("1")) {
+                System.out.print("Матеріал: ");
                 res = store.searchByMaterial(Material.valueOf(scanner.nextLine().toUpperCase()));
-            } else if (c.equals("2")) {
+            } else if (choice.equals("2")) {
                 System.out.print("Макс. ціна: ");
                 res = store.searchByMaxPrice(Double.parseDouble(scanner.nextLine()));
-            } else if (c.equals("3")) {
+            } else if (choice.equals("3")) {
                 System.out.print("Розмір: ");
                 res = store.searchBySize(scanner.nextLine());
             }
             displayList(res);
-        } catch (Exception e) { System.out.println("Помилка пошуку."); }
+
+        } catch (Exception e) {
+            System.out.println("Помилка при пошуку: " + e.getMessage());
+        }
     }
 
     private static void saveToFile() {
